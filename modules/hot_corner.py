@@ -2,7 +2,7 @@ import win32api
 import win32con
 
 
-state = False
+__state = False
 
 
 def __toggle_overview():
@@ -16,13 +16,13 @@ def __toggle_overview():
 
 
 def on_move(x, y):
-	global state
+	global __state
 
-	if x <= 10 and y <= 10:
-		if not state:
+	if x <= 6 and y <= 6:
+		if not __state:
 			__toggle_overview()
-			state = True
+			__state = True
 	else:
-		state = False
+		__state = False
 
 	return True
