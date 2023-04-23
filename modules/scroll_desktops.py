@@ -4,9 +4,9 @@ import win32con
 
 __invalid_scroll_item_classes = [
 	"ReBarWindow32",
-    "MSTaskSwWClass",
-    "MSTaskListWClass",
-    "TrayNotifyWnd",
+	"MSTaskSwWClass",
+	"MSTaskListWClass",
+	"TrayNotifyWnd",
 ]
 
 
@@ -32,7 +32,7 @@ def __enum_child_windows_callback(hwnd, taskbar_buttons):
 	taskbar_buttons.append(hwnd)
 
 
-def on_scroll(x, y, dx, dy):
+def on_scroll(dy):
 	taskbar_hwnd = win32gui.FindWindow("Shell_TrayWnd", None)
 	taskbar_rect = win32gui.GetWindowRect(taskbar_hwnd)
 	mouse_x, mouse_y = win32api.GetCursorPos()
