@@ -1,6 +1,9 @@
 import win32gui
 import win32api
 import win32con
+import time
+
+last_switch_time = None
 
 __invalid_scroll_item_classes = [
 	"ReBarWindow32",
@@ -11,21 +14,27 @@ __invalid_scroll_item_classes = [
 
 
 def __switch_desktop(dy):
-	ctrl_code = 0x11
-	win_code = 0x5B
+	global last_switch_time
 
-	if dy == -1:
-		arrow_code = 0x27  # ->
+	current_time = time.time()
 
-	elif dy == 1:
-		arrow_code = 0x25  # <-
+	if not last_switch_time or current_time >= last_switch_time + 0.2:
+		ctrl_code = 0x11
+		win_code = 0x5B
 
-	win32api.keybd_event(ctrl_code, 0, 0, 0)
-	win32api.keybd_event(win_code, 0, 0, 0)
-	win32api.keybd_event(arrow_code, 0, 0, 0)
-	win32api.keybd_event(arrow_code, 0, win32con.KEYEVENTF_KEYUP, 0)
-	win32api.keybd_event(win_code, 0, win32con.KEYEVENTF_KEYUP, 0)
-	win32api.keybd_event(ctrl_code, 0, win32con.KEYEVENTF_KEYUP, 0)
+		if dy == -1:
+			arrow_code = 0x27  # ->
+		elif dy == 1:
+			arrow_code = 0x25  # <-
+
+		win32api.keybd_event(ctrl_code, 0, 0, 0)
+		win32api.keybd_event(win_code, 0, 0, 0)
+		win32api.keybd_event(arrow_code, 0, 0, 0)
+		win32api.keybd_event(arrow_code, 0, win32con.KEYEVENTF_KEYUP, 0)
+		win32api.keybd_event(win_code, 0, win32con.KEYEVENTF_KEYUP, 0)
+		win32api.keybd_event(ctrl_code, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+		last_switch_time = current_time
 
 
 def __enum_child_windows_callback(hwnd, taskbar_buttons):
