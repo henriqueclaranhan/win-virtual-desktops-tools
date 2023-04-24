@@ -1,6 +1,6 @@
 import win32api
 import win32con
-
+from miscellaneous.utils import keyup_all_keyboard_keys
 
 __state = False
 
@@ -8,6 +8,8 @@ __state = False
 def __toggle_overview():
 	win_code = 0x5B
 	tab_code = 0x09
+
+	keyup_all_keyboard_keys()
 
 	win32api.keybd_event(win_code, 0, 0, 0)
 	win32api.keybd_event(tab_code, 0, 0, 0)

@@ -2,6 +2,7 @@ import win32gui
 import win32api
 import win32con
 import time
+from miscellaneous.utils import keyup_all_keyboard_keys
 
 last_switch_time = None
 
@@ -26,6 +27,8 @@ def __switch_desktop(dy):
 			arrow_code = 0x27  # ->
 		elif dy == 1:
 			arrow_code = 0x25  # <-
+
+		keyup_all_keyboard_keys()
 
 		win32api.keybd_event(ctrl_code, 0, 0, 0)
 		win32api.keybd_event(win_code, 0, 0, 0)
