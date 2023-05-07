@@ -2,6 +2,7 @@ import win32gui
 import win32api
 import win32con
 import time
+from threading import Thread
 from miscellaneous.utils import keyup_all_keyboard_keys
 
 __last_switch_time = None
@@ -84,7 +85,7 @@ def __handle_taskbar_scroll(dy):
 
 
 def on_scroll(dy):
-	__handle_overview_scroll(dy)
-	__handle_taskbar_scroll(dy)
+	Thread(target=__handle_overview_scroll(dy)).start()
+	Thread(target=__handle_taskbar_scroll(dy)).start()
 
 	return True
