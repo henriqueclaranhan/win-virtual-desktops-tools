@@ -40,26 +40,43 @@ def __switch_desktop(dy):
 		__last_switch_time = current_time
 
 
-def __enum_child_windows_callback(hwnd, taskbar_buttons):
+def __enum_taskbar_items_callback(hwnd, taskbar_buttons):
 	taskbar_buttons.append(hwnd)
 
 
+def __enum_taskbars_callback(hwnd, taskbars):
+	class_name = win32gui.GetClassName(hwnd)
+
+	if class_name == "Shell_TrayWnd" or class_name == "Shell_SecondaryTrayWnd":
+		taskbars.append(hwnd)
+
+	return True
+
+
+def __handle_taskbar_scroll(dy):
+	taskbars = []
+
+	win32gui.EnumWindows(__enum_taskbars_callback, taskbars)
+
+	for taskbar_hwnd in taskbars:
+		taskbar_rect = win32gui.GetWindowRect(taskbar_hwnd)
+		mouse_x, mouse_y = win32api.GetCursorPos()
+
+		if win32gui.PtInRect(taskbar_rect, (mouse_x, mouse_y)):
+			taskbar_items = []
+			win32gui.EnumChildWindows(taskbar_hwnd, __enum_taskbar_items_callback, taskbar_items)
+
+			for item in taskbar_items:
+				if win32gui.GetClassName(item) in __invalid_scroll_item_classes:
+					item_rect = win32gui.GetWindowRect(item)
+
+					if win32gui.PtInRect(item_rect, (mouse_x, mouse_y)):
+						return True
+
+			__switch_desktop(dy)
+
+
 def on_scroll(dy):
-	taskbar_hwnd = win32gui.FindWindow("Shell_TrayWnd", None)
-	taskbar_rect = win32gui.GetWindowRect(taskbar_hwnd)
-	mouse_x, mouse_y = win32api.GetCursorPos()
-
-	if win32gui.PtInRect(taskbar_rect, (mouse_x, mouse_y)):
-		taskbar_items = []
-		win32gui.EnumChildWindows(taskbar_hwnd, __enum_child_windows_callback, taskbar_items)
-
-		for item in taskbar_items:
-			if win32gui.GetClassName(item) in __invalid_scroll_item_classes:
-				item_rect = win32gui.GetWindowRect(item)
-
-				if win32gui.PtInRect(item_rect, (mouse_x, mouse_y)):
-					return True
-
-		__switch_desktop(dy)
+	__handle_taskbar_scroll(dy)
 
 	return True
