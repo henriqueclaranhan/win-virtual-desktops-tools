@@ -4,7 +4,7 @@ import win32con
 import time
 from miscellaneous.utils import keyup_all_keyboard_keys
 
-last_switch_time = None
+__last_switch_time = None
 
 __invalid_scroll_item_classes = [
 	"ReBarWindow32",
@@ -15,11 +15,11 @@ __invalid_scroll_item_classes = [
 
 
 def __switch_desktop(dy):
-	global last_switch_time
+	global __last_switch_time
 
 	current_time = time.time()
 
-	if not last_switch_time or current_time >= last_switch_time + 0.2:
+	if not __last_switch_time or current_time >= __last_switch_time + 0.2:
 		ctrl_code = 0x11
 		win_code = 0x5B
 
@@ -37,7 +37,7 @@ def __switch_desktop(dy):
 		win32api.keybd_event(win_code, 0, win32con.KEYEVENTF_KEYUP, 0)
 		win32api.keybd_event(ctrl_code, 0, win32con.KEYEVENTF_KEYUP, 0)
 
-		last_switch_time = current_time
+		__last_switch_time = current_time
 
 
 def __enum_child_windows_callback(hwnd, taskbar_buttons):
