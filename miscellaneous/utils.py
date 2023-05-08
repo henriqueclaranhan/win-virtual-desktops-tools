@@ -2,6 +2,11 @@ import win32api
 import win32con
 import win32gui
 
+__ingore_fullscreen_classes = [
+	"WorkerW",
+	"XamlExplorerHostIslandWindow",
+]
+
 
 def keyup_all_keyboard_keys():
 	for key_code in range(256):
@@ -12,7 +17,7 @@ def keyup_all_keyboard_keys():
 def is_app_fullscreen():
 	foreground_window_hwnd = win32gui.GetForegroundWindow()
 
-	if foreground_window_hwnd == 0 or win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow":
+	if foreground_window_hwnd == 0 or win32gui.GetClassName(foreground_window_hwnd) in __ingore_fullscreen_classes:
 		return False
 
 	window_rect = win32gui.GetWindowRect(foreground_window_hwnd)
