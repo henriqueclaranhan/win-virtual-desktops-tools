@@ -62,6 +62,11 @@ def __handle_overview_scroll(dy):
 
 
 def __handle_taskbar_scroll(dy):
+	foreground_window_hwnd = win32gui.GetForegroundWindow()
+
+	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow":
+		return
+
 	taskbars = []
 
 	win32gui.EnumWindows(__enum_taskbars_callback, taskbars)
