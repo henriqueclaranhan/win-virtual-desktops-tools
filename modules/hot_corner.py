@@ -1,11 +1,20 @@
 import win32api
 import win32con
+import time
 from miscellaneous.utils import keyup_all_keyboard_keys
 
 __state = False
+__last_state_time = None
 
 
 def __toggle_overview():
+	global __last_state_time
+
+	current_time = time.time()
+
+	if __last_state_time and current_time <= __last_state_time + 0.5:
+		return
+
 	win_code = 0x5B
 	tab_code = 0x09
 
@@ -16,11 +25,18 @@ def __toggle_overview():
 	win32api.keybd_event(win_code, 0, win32con.KEYEVENTF_KEYUP, 0)
 	win32api.keybd_event(tab_code, 0, win32con.KEYEVENTF_KEYUP, 0)
 
+	__last_state_time = current_time
 
-def on_move(x, y):
+
+def on_move():
 	global __state
 
-	if x <= 6 and y <= 6:
+	x, y = win32api.GetCursorPos()
+
+	monitor_handle = win32api.MonitorFromPoint((x, y), win32con.MONITOR_DEFAULTTONEAREST)
+	monitor_rect = win32api.GetMonitorInfo(monitor_handle)["Monitor"]
+
+	if x <= monitor_rect[0] + 6 and y <= 6:
 		if not __state:
 			__toggle_overview()
 			__state = True

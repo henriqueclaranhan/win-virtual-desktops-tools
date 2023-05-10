@@ -8,7 +8,7 @@ def on_move(x, y):
 	if utils.is_app_fullscreen():
 		return
 
-	hot_corner.on_move(x, y)
+	hot_corner.on_move()
 
 
 def on_scroll(x, y, dx, dy):
