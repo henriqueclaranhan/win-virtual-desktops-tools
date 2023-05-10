@@ -3,6 +3,7 @@ import sys
 import pystray
 import win32api
 from PIL import Image
+from threading import Thread
 from _version import check_updates, __releases_url__
 
 
@@ -24,16 +25,30 @@ def __on_exit(icon, listener):
 	icon.stop()
 
 
-def setup_tray(listener):
+def __handle_updates_behaviors(icon: pystray.Icon, menu_items: list):
 	have_update = check_updates()
 
-	icon_filename = "icon" if not have_update else "icon-update"
-	image = Image.open(__get_resource_path(f"assets/{icon_filename}.ico"))
-	icon = pystray.Icon("Win Virtual Desktops Tools", image, "Win Virtual Desktops Tools")
+	if have_update:
+		menu_items.insert(0, pystray.MenuItem("⚠️ Update Available", __on_click_update))
 
-	icon.menu = pystray.Menu(
-		pystray.MenuItem("Update Available", __on_click_update, visible=have_update),
-		pystray.MenuItem("Exit", lambda: __on_exit(icon, listener))
+		image = Image.open(__get_resource_path("assets/icon-update.ico"))
+
+		icon.icon = image
+		icon.menu = pystray.Menu(*menu_items)
+
+
+def setup_tray(listener):
+	menu_items = [
+		pystray.MenuItem("❎ Exit", lambda: __on_exit(icon, listener))
+	]
+
+	icon = pystray.Icon(
+		icon=Image.open(__get_resource_path("assets/icon.ico")),
+		name="Win Virtual Desktops Tools",
+		title="Win Virtual Desktops Tools",
+		menu=pystray.Menu(*menu_items)
 	)
+
+	Thread(target=__handle_updates_behaviors, args=(icon, menu_items)).start()
 
 	icon.run()
