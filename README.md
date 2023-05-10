@@ -1,5 +1,5 @@
 <div align="center">
-	<img src="icon.ico" width="190">
+	<img src="assets/icon.ico" width="190">
 	<h1>Win Virtual Desktops Tools</h1>
 	<p>Improves your experience with Windows virtual desktops</p>
 </div>
