@@ -2,7 +2,6 @@ import win32gui
 import win32api
 import win32con
 import time
-from threading import Thread
 from miscellaneous.utils import keyup_all_keyboard_keys
 
 __last_switch_time = None
@@ -60,6 +59,10 @@ def __handle_overview_scroll(dy):
 	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow":
 		__switch_desktop(dy)
 
+		return True
+
+	return False
+
 
 def __handle_taskbar_scroll(dy):
 	foreground_window_hwnd = win32gui.GetForegroundWindow()
@@ -84,13 +87,18 @@ def __handle_taskbar_scroll(dy):
 					item_rect = win32gui.GetWindowRect(item)
 
 					if win32gui.PtInRect(item_rect, (mouse_x, mouse_y)):
-						return True
+						return False
 
 			__switch_desktop(dy)
 
+			return True
+
+	return False
+
 
 def on_scroll(dy):
-	Thread(target=__handle_overview_scroll(dy)).start()
-	Thread(target=__handle_taskbar_scroll(dy)).start()
+	if __handle_overview_scroll(dy):
+		return True
 
-	return True
+	elif __handle_taskbar_scroll(dy):
+		return True
