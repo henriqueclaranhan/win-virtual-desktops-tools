@@ -44,15 +44,6 @@ def __enum_taskbar_items_callback(hwnd, taskbar_buttons):
 	taskbar_buttons.append(hwnd)
 
 
-def __enum_taskbars_callback(hwnd, taskbars):
-	class_name = win32gui.GetClassName(hwnd)
-
-	if class_name == "Shell_TrayWnd" or class_name == "Shell_SecondaryTrayWnd":
-		taskbars.append(hwnd)
-
-	return True
-
-
 def __handle_overview_scroll(dy):
 	foreground_window_hwnd = win32gui.GetForegroundWindow()
 
@@ -64,15 +55,29 @@ def __handle_overview_scroll(dy):
 	return False
 
 
-def __handle_taskbar_scroll(dy):
-	foreground_window_hwnd = win32gui.GetForegroundWindow()
-
-	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow":
-		return
-
+def __get_taskbars():
 	taskbars = []
 
-	win32gui.EnumWindows(__enum_taskbars_callback, taskbars)
+	primary_taskbar = win32gui.FindWindowEx(0, 0, "Shell_TrayWnd", None)
+
+	if primary_taskbar:
+		taskbars.append(primary_taskbar)
+
+	secondary_taskbar = 0
+
+	while True:
+		secondary_taskbar = win32gui.FindWindowEx(0, secondary_taskbar, "Shell_SecondaryTrayWnd", None)
+
+		if not secondary_taskbar:
+			break
+
+		taskbars.append(secondary_taskbar)
+
+	return taskbars
+
+
+def __handle_taskbar_scroll(dy):
+	taskbars = __get_taskbars()
 
 	for taskbar_hwnd in taskbars:
 		taskbar_rect = win32gui.GetWindowRect(taskbar_hwnd)
