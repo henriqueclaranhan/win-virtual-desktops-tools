@@ -6,7 +6,7 @@ __version__ = "v" + ".".join(__version_info__)
 
 __releases_url__ = "https://github.com/henriqueclaranhan/win-virtual-desktops-tools/releases"
 __releases_api_url__ = "api.github.com"
-__releases_api_path__ = "/repos/henriqueclaranhan/win-virtual-desktops-tools/releases"
+__releases_api_path__ = "/repos/henriqueclaranhan/win-virtual-desktops-tools/releases/latest"
 
 
 def check_updates():
@@ -20,7 +20,7 @@ def check_updates():
 	data = json.loads(response.read().decode('utf-8'))
 	conn.close()
 
-	if __version__ != data[0]["tag_name"]:
+	if __version__ != data["tag_name"]:
 		return True
 
 	return False
