@@ -1,5 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('.'))
+
+from _version import __version__
+
+versioned_name = f'win-virtual-desktops-tools-standalone-{__version__.replace(".", "-")}'
+
 
 block_cipher = None
 
@@ -28,7 +37,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='win-virtual-desktops-tools',
+    name=versioned_name,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
