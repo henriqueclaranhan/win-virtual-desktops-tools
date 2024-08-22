@@ -7,11 +7,15 @@ __ingore_fullscreen_classes = [
 	"XamlExplorerHostIslandWindow",
 ]
 
+key_codes_release = [
+    win32con.VK_LSHIFT, win32con.VK_RSHIFT, win32con.VK_LCONTROL, win32con.VK_RCONTROL,
+    win32con.VK_LMENU, win32con.VK_RMENU, win32con.VK_LWIN, win32con.VK_RWIN,
+]
+
 
 def keyup_all_keyboard_keys():
-	for key_code in range(256):
-		if win32api.GetAsyncKeyState(key_code):
-			win32api.keybd_event(key_code, 0, win32con.KEYEVENTF_KEYUP, 0)
+	for key in key_codes_release:
+		win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
 
 
 def is_app_fullscreen():
