@@ -7,6 +7,7 @@ from miscellaneous.utils import keyup_all_keyboard_keys
 __last_switch_time = None
 
 __invalid_scroll_item_classes = [
+	"Start",
 	"ReBarWindow32",
 	"MSTaskSwWClass",
 	"MSTaskListWClass",
