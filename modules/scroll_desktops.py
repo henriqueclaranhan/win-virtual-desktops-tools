@@ -3,6 +3,9 @@ import win32api
 import win32con
 import time
 from miscellaneous.utils import keyup_all_keyboard_keys
+from modules.move_windows import move_windows_to_next_desktop
+from miscellaneous.virtual_desktop_accessor import VirtualDesktopAccessor
+
 
 __last_switch_time = None
 
@@ -20,7 +23,10 @@ def __switch_desktop(dy):
 
 	current_time = time.time()
 
-	if not __last_switch_time or current_time >= __last_switch_time + 0.2:
+	if not __last_switch_time or current_time >= __last_switch_time + 0.3:
+		current_desktop_number = VirtualDesktopAccessor.GetCurrentDesktopNumber()
+		next_desktop_number = current_desktop_number + dy * -1
+
 		ctrl_code = 0x11
 		win_code = 0x5B
 
@@ -38,7 +44,12 @@ def __switch_desktop(dy):
 		win32api.keybd_event(win_code, 0, win32con.KEYEVENTF_KEYUP, 0)
 		win32api.keybd_event(ctrl_code, 0, win32con.KEYEVENTF_KEYUP, 0)
 
-		__last_switch_time = current_time
+		__last_switch_time = time.time()
+
+		# Minimizes wallpaper flickering while switching between virtual desktops, sometimes it works
+		time.sleep(0.075)
+
+		move_windows_to_next_desktop(next_desktop_number)
 
 
 def __enum_taskbar_items_callback(hwnd, taskbar_buttons):

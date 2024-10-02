@@ -32,3 +32,5 @@ def is_app_fullscreen():
 		monitor_rect = monitor_info["Monitor"]
 
 		return window_rect == monitor_rect
+
+	return False

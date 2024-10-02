@@ -5,17 +5,23 @@ from miscellaneous import utils
 
 
 def on_move(x, y):
-	if utils.is_app_fullscreen():
-		return
+	try:
+		if not utils.is_app_fullscreen():
+			hot_corner.on_move()
 
-	hot_corner.on_move()
+	except Exception as err:
+		print(f"Unexpected {err=}, {type(err)=}")
+		raise
 
 
 def on_scroll(x, y, dx, dy):
-	if utils.is_app_fullscreen():
-		return
+	try:
+		if not utils.is_app_fullscreen():
+			scroll_desktops.on_scroll(dy)
 
-	scroll_desktops.on_scroll(dy)
+	except Exception as err:
+		print(f"Unexpected {err=}, {type(err)=}")
+		raise
 
 
 listener = Listener(on_move=on_move, on_scroll=on_scroll)
