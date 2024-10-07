@@ -1,7 +1,7 @@
 import http.client
 import json
 
-__version_info__ = ("1", "1", "0")
+__version_info__ = ("1", "1", "1")
 __version__ = "v" + ".".join(__version_info__)
 
 __releases_url__ = "https://github.com/henriqueclaranhan/win-virtual-desktops-tools/releases"

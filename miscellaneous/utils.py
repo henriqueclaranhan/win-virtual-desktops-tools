@@ -19,15 +19,17 @@ def keyup_all_keyboard_keys():
 
 
 def is_app_fullscreen():
-	foreground_window_hwnd = win32gui.GetForegroundWindow()
+	x, y = win32api.GetCursorPos()
 
-	if foreground_window_hwnd == 0 or win32gui.GetClassName(foreground_window_hwnd) in __ingore_fullscreen_classes:
+	window_hwnd = win32gui.WindowFromPoint((x, y))
+
+	if window_hwnd == 0 or win32gui.GetClassName(window_hwnd) in __ingore_fullscreen_classes:
 		return False
 
-	window_rect = win32gui.GetWindowRect(foreground_window_hwnd)
-	monitor = win32api.MonitorFromWindow(foreground_window_hwnd, win32con.MONITOR_DEFAULTTONULL)
+	monitor = win32api.MonitorFromWindow(window_hwnd, win32con.MONITOR_DEFAULTTONULL)
 
 	if monitor:
+		window_rect = win32gui.GetWindowRect(window_hwnd)
 		monitor_info = win32api.GetMonitorInfo(monitor)
 		monitor_rect = monitor_info["Monitor"]
 
