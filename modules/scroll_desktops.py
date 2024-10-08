@@ -2,6 +2,7 @@ import win32gui
 import win32api
 import win32con
 import time
+from components.settings import get_feature_state, TASKBAR_SCROLL
 from miscellaneous.utils import keyup_all_keyboard_keys
 from modules.move_windows import move_windows_to_next_desktop
 from miscellaneous.virtual_desktop_accessor import VirtualDesktopAccessor
@@ -59,7 +60,7 @@ def __enum_taskbar_items_callback(hwnd, taskbar_buttons):
 def __handle_overview_scroll(dy):
 	foreground_window_hwnd = win32gui.GetForegroundWindow()
 
-	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow":
+	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow" and get_feature_state(TASKBAR_SCROLL):
 		__switch_desktop(dy)
 
 		return True
@@ -106,9 +107,10 @@ def __handle_taskbar_scroll(dy):
 					if win32gui.PtInRect(item_rect, (mouse_x, mouse_y)):
 						return False
 
-			__switch_desktop(dy)
+			if get_feature_state(TASKBAR_SCROLL):
+				__switch_desktop(dy)
 
-			return True
+				return True
 
 	return False
 

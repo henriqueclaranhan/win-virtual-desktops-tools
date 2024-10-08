@@ -1,6 +1,7 @@
 import win32api
 import win32con
 import time
+from components.settings import get_feature_state, HOT_CORNER
 from miscellaneous.utils import keyup_all_keyboard_keys
 
 __state = False
@@ -37,7 +38,7 @@ def on_move():
 	monitor_rect = win32api.GetMonitorInfo(monitor_handle)["Monitor"]
 
 	if x <= monitor_rect[0] + 6 and y <= 6:
-		if not __state:
+		if not __state and get_feature_state(HOT_CORNER):
 			__toggle_overview()
 			__state = True
 	else:

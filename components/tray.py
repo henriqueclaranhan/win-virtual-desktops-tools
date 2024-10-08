@@ -2,6 +2,7 @@ import os
 import sys
 import pystray
 import win32api
+import components.settings as settings
 from PIL import Image
 from threading import Thread
 from _version import check_updates, __releases_url__
@@ -17,7 +18,7 @@ def __get_resource_path(relative_path):
 
 
 def __on_click_update():
-	win32api.ShellExecute(0, 'open', __releases_url__, None, None, 1)
+	win32api.ShellExecute(0, "open", __releases_url__, None, None, 1)
 
 
 def __on_exit(icon, listener):
@@ -25,7 +26,11 @@ def __on_exit(icon, listener):
 	icon.stop()
 
 
-def __handle_updates_behaviors(icon: pystray.Icon, menu_items: list):
+def __change_feature_state(icon, feature):
+	settings.change_feature_state(str(feature))
+
+
+def __handle_updates_behaviors(icon, menu_items: list):
 	have_update = check_updates()
 
 	if have_update:
@@ -37,8 +42,17 @@ def __handle_updates_behaviors(icon: pystray.Icon, menu_items: list):
 		icon.menu = pystray.Menu(*menu_items)
 
 
+def __get_feature_state(feature):
+	return settings.get_feature_state(feature)
+
+
 def setup_tray(listener):
 	menu_items = [
+		pystray.MenuItem("⚙️ Features", pystray.Menu(
+			pystray.MenuItem(settings.HOT_CORNER, __change_feature_state, checked=lambda item: __get_feature_state(settings.HOT_CORNER)),
+			pystray.MenuItem(settings.TASKBAR_SCROLL, __change_feature_state, checked=lambda item: __get_feature_state(settings.TASKBAR_SCROLL)),
+			pystray.MenuItem(settings.KEEP_WINDOWS, __change_feature_state, checked=lambda item: __get_feature_state(settings.KEEP_WINDOWS))
+		)),
 		pystray.MenuItem("❎ Exit", lambda: __on_exit(icon, listener))
 	]
 

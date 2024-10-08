@@ -1,6 +1,7 @@
 import win32gui
 import win32api
 import win32con
+from components.settings import get_feature_state, KEEP_WINDOWS
 from miscellaneous.virtual_desktop_accessor import VirtualDesktopAccessor
 
 
@@ -27,6 +28,9 @@ def __get_primary_monitor_info():
 
 
 def move_windows_to_next_desktop(next_desktop_number):
+	if not get_feature_state(KEEP_WINDOWS):
+		return False
+
 	primary_monitor_info = __get_primary_monitor_info()
 	windows = __get_all_windows()
 
@@ -34,5 +38,5 @@ def move_windows_to_next_desktop(next_desktop_number):
 		window_monitor = win32api.MonitorFromWindow(hwnd, win32con.MONITOR_DEFAULTTONEAREST)
 		window_monitor_info = win32api.GetMonitorInfo(window_monitor)
 
-		if window_monitor_info['Device'] != primary_monitor_info['Device']:
+		if window_monitor_info["Device"] != primary_monitor_info["Device"]:
 			VirtualDesktopAccessor.MoveWindowToDesktopNumber(hwnd, next_desktop_number)
