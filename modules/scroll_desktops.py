@@ -10,6 +10,8 @@ from miscellaneous.virtual_desktop_accessor import VirtualDesktopAccessor
 
 __last_switch_time = None
 
+__current_desktop_number = VirtualDesktopAccessor.GetCurrentDesktopNumber()
+
 __invalid_scroll_item_classes = [
 	"Start",
 	"ReBarWindow32",
@@ -121,3 +123,19 @@ def on_scroll(dy):
 
 	elif __handle_taskbar_scroll(dy):
 		return True
+
+
+def check_desktop_changed():
+	global __last_switch_time, __current_desktop_number
+
+	current_time = time.time()
+
+	if __last_switch_time and current_time < __last_switch_time + 0.3:
+		return
+
+	if __current_desktop_number == VirtualDesktopAccessor.GetCurrentDesktopNumber():
+		return
+
+	__current_desktop_number = VirtualDesktopAccessor.GetCurrentDesktopNumber()
+
+	move_windows_to_next_desktop(__current_desktop_number)

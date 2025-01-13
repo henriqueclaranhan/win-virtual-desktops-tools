@@ -27,7 +27,7 @@ def __save_settings(settings):
 
 
 def __create_settings():
-	default_settings = {feature: True for feature in __features}
+	default_settings = {feature: __features[feature] for feature in __features}
 
 	__save_settings(default_settings)
 
@@ -55,7 +55,7 @@ def __sync_settings():
 
 	for feature in __features:
 		if feature not in settings:
-			settings[feature] = True
+			settings[feature] = __features[feature]
 			updated = True
 
 	if updated:
