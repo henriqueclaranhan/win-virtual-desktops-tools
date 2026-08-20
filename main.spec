@@ -29,7 +29,6 @@ excluded_modules = [
     'pydoc_data',
     'doctest',
     'sqlite3',
-    'email',
     'xml',
     'xmlrpc',
     'distutils',
@@ -104,4 +103,3 @@ exe = EXE(
     entitlements_file=None,
     icon=['./assets/icon.ico'],
 )
-
