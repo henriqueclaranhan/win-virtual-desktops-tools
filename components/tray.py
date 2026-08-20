@@ -6,9 +6,11 @@ import components.settings as settings
 from PIL import Image
 from threading import Thread
 from _version import check_updates, __releases_url__
+from components.hot_corner_settings_ui import open_hot_corner_settings_window
 
 
 def __get_resource_path(relative_path):
+
 	try:
 		base_path = sys._MEIPASS
 	except Exception:
@@ -47,12 +49,16 @@ def __get_feature_state(feature):
 
 
 def setup_tray(listener):
+
 	menu_items = [
 		pystray.MenuItem("⚙️ Features", pystray.Menu(
 			pystray.MenuItem(settings.HOT_CORNER, __change_feature_state, checked=lambda item: __get_feature_state(settings.HOT_CORNER)),
 			pystray.MenuItem(settings.TASKBAR_SCROLL, __change_feature_state, checked=lambda item: __get_feature_state(settings.TASKBAR_SCROLL)),
-			pystray.MenuItem(settings.KEEP_WINDOWS, __change_feature_state, checked=lambda item: __get_feature_state(settings.KEEP_WINDOWS))
+			pystray.MenuItem(settings.KEEP_WINDOWS, __change_feature_state, checked=lambda item: __get_feature_state(settings.KEEP_WINDOWS)),
+			pystray.Menu.SEPARATOR,
+			pystray.MenuItem("📐 Configure Hot Corners...", lambda: open_hot_corner_settings_window())
 		)),
+		pystray.MenuItem("📐 Hot Corners Settings", lambda: open_hot_corner_settings_window()),
 		pystray.MenuItem("❎ Exit", lambda: __on_exit(icon, listener))
 	]
 

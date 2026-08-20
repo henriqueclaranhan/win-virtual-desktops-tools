@@ -1,3 +1,4 @@
+import multiprocessing
 import threading
 import time
 from pynput.mouse import Listener
@@ -28,11 +29,13 @@ def check_virtual_desktop_switch():
 		time.sleep(0.2)
 
 
-listener = Listener(on_move=on_move, on_scroll=on_scroll)
-listener.start()
+if __name__ == "__main__":
+	multiprocessing.freeze_support()
 
-desktop_monitor_thread = threading.Thread(target=check_virtual_desktop_switch, daemon=True)
-desktop_monitor_thread.start()
+	listener = Listener(on_move=on_move, on_scroll=on_scroll)
+	listener.start()
 
-tray.setup_tray(listener)
+	desktop_monitor_thread = threading.Thread(target=check_virtual_desktop_switch, daemon=True)
+	desktop_monitor_thread.start()
 
+	tray.setup_tray(listener)
