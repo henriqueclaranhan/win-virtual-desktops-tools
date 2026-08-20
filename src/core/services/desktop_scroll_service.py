@@ -11,7 +11,6 @@ class DesktopScrollService:
     """Handles virtual desktop switching when scrolling over the taskbar or Task View."""
 
     DEBOUNCE_INTERVAL_SEC = 0.3
-    FLICKER_MINIMIZE_DELAY_SEC = 0.075
 
     def __init__(
         self,
@@ -65,12 +64,11 @@ class DesktopScrollService:
         self._last_switch_time = time.time()
         self._current_desktop_number = next_desktop
 
-        time.sleep(self.FLICKER_MINIMIZE_DELAY_SEC)
-        self._window_mgr.move_secondary_windows_to_desktop(next_desktop)
+        self._window_mgr.sync_secondary_windows()
         return True
 
     def check_desktop_changed(self) -> None:
-        """Polled periodically by background worker thread to sync secondary windows on manual desktop switch."""
+        """Polled periodically by background worker thread to sync secondary window pinning."""
         config = self._config_repo.get_config()
         if not config.keep_secondary_windows:
             return
@@ -80,8 +78,7 @@ class DesktopScrollService:
             return
 
         current_desktop = self._vda.get_current_desktop_number()
-        if self._current_desktop_number == current_desktop:
-            return
+        if self._current_desktop_number != current_desktop:
+            self._current_desktop_number = current_desktop
 
-        self._current_desktop_number = current_desktop
-        self._window_mgr.move_secondary_windows_to_desktop(current_desktop)
+        self._window_mgr.sync_secondary_windows()

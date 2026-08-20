@@ -6,7 +6,7 @@ from src.infrastructure.storage.config_repository import ConfigRepository
 
 
 class WindowManagerService:
-    """Manages window positions across virtual desktops and monitors."""
+    """Manages window positions and pinning across virtual desktops and monitors."""
 
     def __init__(
         self,
@@ -18,17 +18,19 @@ class WindowManagerService:
         self._win = win_adapter or WindowsAdapter()
         self._vda = vda_adapter or VirtualDesktopAdapter()
 
-    def move_secondary_windows_to_desktop(self, target_desktop_number: int) -> bool:
+    def sync_secondary_windows(self) -> bool:
         """
-        Moves all windows that reside on secondary monitors to the given virtual desktop.
-        This keeps secondary monitor windows visible across virtual desktop switches on the primary monitor.
+        Pins windows on secondary monitors so they natively stay visible across all virtual desktops.
+        Unpins windows located on the primary monitor or if the feature is disabled.
         """
         config = self._config_repo.get_config()
         if not config.keep_secondary_windows:
+            self.unpin_all_secondary_windows()
             return False
 
         monitors = self._win.get_connected_monitors()
         if len(monitors) <= 1:
+            self.unpin_all_secondary_windows()
             return False
 
         primary_device = self._win.get_primary_monitor_device()
@@ -41,8 +43,29 @@ class WindowManagerService:
             try:
                 window_device = self._win.get_window_monitor_device(hwnd)
                 if window_device and window_device != primary_device:
-                    self._vda.move_window_to_desktop_number(hwnd, target_desktop_number)
+                    if not self._vda.is_pinned_window(hwnd):
+                        self._vda.pin_window(hwnd)
+                elif window_device and window_device == primary_device:
+                    if self._vda.is_pinned_window(hwnd):
+                        self._vda.unpin_window(hwnd)
             except Exception:
                 continue
 
         return True
+
+    def unpin_all_secondary_windows(self) -> None:
+        """Unpins all currently pinned visible windows."""
+        try:
+            windows = self._win.get_all_visible_top_level_windows()
+            for hwnd in windows:
+                try:
+                    if self._vda.is_pinned_window(hwnd):
+                        self._vda.unpin_window(hwnd)
+                except Exception:
+                    continue
+        except Exception as err:
+            print(f"[WindowManagerService] Error unpinning windows: {err}")
+
+    def move_secondary_windows_to_desktop(self, target_desktop_number: int) -> bool:
+        """Legacy compatibility wrapper that syncs secondary window pinning."""
+        return self.sync_secondary_windows()

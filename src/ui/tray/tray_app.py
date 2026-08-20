@@ -60,7 +60,7 @@ class TrayApp:
                     ),
                     pystray.MenuItem(
                         AppConfig.KEY_KEEP_WINDOWS,
-                        lambda: config_repo.toggle_keep_secondary_windows(),
+                        self._on_toggle_keep_windows,
                         checked=lambda _: config_repo.get_config().keep_secondary_windows,
                     ),
                     pystray.Menu.SEPARATOR,
@@ -79,6 +79,10 @@ class TrayApp:
                 self._on_exit,
             ),
         ]
+
+    def _on_toggle_keep_windows(self) -> None:
+        self._ctx.config_repo.toggle_keep_secondary_windows()
+        self._ctx.window_mgr_service.sync_secondary_windows()
 
     def _on_exit(self, icon: pystray.Icon, item: pystray.MenuItem) -> None:
         self._mouse_listener.stop()

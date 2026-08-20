@@ -31,7 +31,7 @@ class TestDesktopScrollService(unittest.TestCase):
         handled = self.service.handle_scroll(x=100, y=100, dy=-1)
         self.assertTrue(handled)
         self.mock_win.trigger_desktop_switch_shortcut.assert_called_once_with(1)
-        self.mock_window_mgr.move_secondary_windows_to_desktop.assert_called_once_with(1)
+        self.mock_window_mgr.sync_secondary_windows.assert_called_once()
 
     def test_scroll_up_at_boundary_does_not_switch(self):
         handled = self.service.handle_scroll(x=100, y=100, dy=1)

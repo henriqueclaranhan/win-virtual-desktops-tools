@@ -49,6 +49,10 @@ class AppContext:
 
     def stop(self) -> None:
         self._running = False
+        try:
+            self.window_mgr_service.unpin_all_secondary_windows()
+        except Exception as err:
+            print(f"[AppContext] Error unpinning secondary windows on stop: {err}")
 
     def _desktop_monitor_loop(self) -> None:
         while self._running:
@@ -56,4 +60,4 @@ class AppContext:
                 self.desktop_scroll_service.check_desktop_changed()
             except Exception as err:
                 print(f"[AppContext] Error in desktop monitor loop: {err}")
-            time.sleep(0.2)
+            time.sleep(0.5)
