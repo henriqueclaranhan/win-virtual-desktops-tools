@@ -9,8 +9,39 @@ from _version import __version__
 
 versioned_name = f'win-virtual-desktops-tools-standalone-{__version__.replace(".", "-")}'
 
-
 block_cipher = None
+
+excluded_modules = [
+    'numpy',
+    'scipy',
+    'pandas',
+    'matplotlib',
+    'psutil',
+    'charset_normalizer',
+    'PIL.ImageFilter',
+    'PIL.SpiderImagePlugin',
+    'PIL.ImageTk',
+    'PIL.ImageQt',
+    'PIL.ImageWin',
+    'PIL.ImageShow',
+    'unittest',
+    'pydoc',
+    'pydoc_data',
+    'doctest',
+    'sqlite3',
+    'email',
+    'xml',
+    'xmlrpc',
+    'distutils',
+    'setuptools',
+    'pkg_resources',
+    'pdb',
+    'curses',
+    'asyncio',
+    'tkinter.test',
+    'lib2to3',
+    'test',
+]
 
 
 a = Analysis(
@@ -22,12 +53,32 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=excluded_modules,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
 )
+
+# Filter out unnecessary Tcl/Tk bloat (tzdata, msgs, demos, exotic encodings)
+def filter_datas(datas):
+    filtered = []
+    for item in datas:
+        dest_path = item[0].lower()
+        if 'tcl' in dest_path or 'tk' in dest_path:
+            if 'tzdata' in dest_path:
+                continue
+            if 'msgs' in dest_path:
+                continue
+            if 'demos' in dest_path:
+                continue
+            if 'encoding' in dest_path:
+                if not any(enc in dest_path for enc in ['utf-8', 'cp1252', 'ascii', 'iso8859-1']):
+                    continue
+        filtered.append(item)
+    return filtered
+
+a.datas = filter_datas(a.datas)
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
@@ -53,3 +104,4 @@ exe = EXE(
     entitlements_file=None,
     icon=['./assets/icon.ico'],
 )
+
