@@ -1,6 +1,6 @@
 from __future__ import annotations
 import threading
-from typing import Optional
+from typing import Any, Optional
 from PIL import Image
 import pystray
 import win32api
@@ -19,7 +19,7 @@ class TrayApp:
     def __init__(self, app_context: AppContext, mouse_listener: MouseListenerController):
         self._ctx = app_context
         self._mouse_listener = mouse_listener
-        self._icon: Optional[pystray.Icon] = None
+        self._icon: Optional[Any] = None
         self._menu_items = []
 
     def start(self) -> None:
@@ -76,7 +76,7 @@ class TrayApp:
             ),
             pystray.MenuItem(
                 "❎ Exit",
-                self._on_exit,
+                lambda: self._on_exit(),
             ),
         ]
 
@@ -84,7 +84,7 @@ class TrayApp:
         self._ctx.config_repo.toggle_keep_secondary_windows()
         self._ctx.window_mgr_service.sync_secondary_windows()
 
-    def _on_exit(self, icon: pystray.Icon, item: pystray.MenuItem) -> None:
+    def _on_exit(self) -> None:
         self._mouse_listener.stop()
         self._ctx.stop()
         if self._icon:
