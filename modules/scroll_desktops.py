@@ -2,23 +2,22 @@ import win32gui
 import win32api
 import win32con
 import time
-from components.settings import get_feature_state, TASKBAR_SCROLL
+from components.settings import get_feature_state, TASKBAR_SCROLL, KEEP_WINDOWS
 from miscellaneous.utils import keyup_all_keyboard_keys
 from modules.move_windows import move_windows_to_next_desktop
 from miscellaneous.virtual_desktop_accessor import VirtualDesktopAccessor
 
 
 __last_switch_time = None
-
 __current_desktop_number = VirtualDesktopAccessor.GetCurrentDesktopNumber()
 
-__invalid_scroll_item_classes = [
+__invalid_scroll_item_classes = {
 	"Start",
 	"ReBarWindow32",
 	"MSTaskSwWClass",
 	"MSTaskListWClass",
 	"TrayNotifyWnd",
-]
+}
 
 
 def __switch_desktop(dy):
@@ -28,7 +27,11 @@ def __switch_desktop(dy):
 
 	if not __last_switch_time or current_time >= __last_switch_time + 0.3:
 		current_desktop_number = VirtualDesktopAccessor.GetCurrentDesktopNumber()
+		desktop_count = VirtualDesktopAccessor.GetDesktopCount()
 		next_desktop_number = current_desktop_number + dy * -1
+
+		if next_desktop_number < 0 or next_desktop_number >= desktop_count:
+			return
 
 		ctrl_code = 0x11
 		win_code = 0x5B
@@ -37,6 +40,8 @@ def __switch_desktop(dy):
 			arrow_code = 0x27  # ->
 		elif dy == 1:
 			arrow_code = 0x25  # <-
+		else:
+			return
 
 		keyup_all_keyboard_keys()
 
@@ -55,16 +60,11 @@ def __switch_desktop(dy):
 		move_windows_to_next_desktop(next_desktop_number)
 
 
-def __enum_taskbar_items_callback(hwnd, taskbar_buttons):
-	taskbar_buttons.append(hwnd)
-
-
 def __handle_overview_scroll(dy):
 	foreground_window_hwnd = win32gui.GetForegroundWindow()
 
-	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow" and get_feature_state(TASKBAR_SCROLL):
+	if foreground_window_hwnd != 0 and win32gui.GetClassName(foreground_window_hwnd) == "XamlExplorerHostIslandWindow":
 		__switch_desktop(dy)
-
 		return True
 
 	return False
@@ -74,68 +74,71 @@ def __get_taskbars():
 	taskbars = []
 
 	primary_taskbar = win32gui.FindWindowEx(0, 0, "Shell_TrayWnd", None)
-
 	if primary_taskbar:
 		taskbars.append(primary_taskbar)
 
 	secondary_taskbar = 0
-
 	while True:
 		secondary_taskbar = win32gui.FindWindowEx(0, secondary_taskbar, "Shell_SecondaryTrayWnd", None)
-
 		if not secondary_taskbar:
 			break
-
 		taskbars.append(secondary_taskbar)
 
 	return taskbars
 
 
-def __handle_taskbar_scroll(dy):
+def __handle_taskbar_scroll(x, y, dy):
 	taskbars = __get_taskbars()
 
 	for taskbar_hwnd in taskbars:
 		taskbar_rect = win32gui.GetWindowRect(taskbar_hwnd)
-		mouse_x, mouse_y = win32api.GetCursorPos()
 
-		if win32gui.PtInRect(taskbar_rect, (mouse_x, mouse_y)):
-			taskbar_items = []
-			win32gui.EnumChildWindows(taskbar_hwnd, __enum_taskbar_items_callback, taskbar_items)
+		if win32gui.PtInRect(taskbar_rect, (x, y)):
+			hwnd_under_cursor = win32gui.WindowFromPoint((x, y))
+			curr = hwnd_under_cursor
+			while curr and curr != 0:
+				if win32gui.GetClassName(curr) in __invalid_scroll_item_classes:
+					return False
+				if curr == taskbar_hwnd:
+					break
+				curr = win32gui.GetParent(curr)
 
-			for item in taskbar_items:
-				if win32gui.GetClassName(item) in __invalid_scroll_item_classes:
-					item_rect = win32gui.GetWindowRect(item)
-
-					if win32gui.PtInRect(item_rect, (mouse_x, mouse_y)):
-						return False
-
-			if get_feature_state(TASKBAR_SCROLL):
-				__switch_desktop(dy)
-
-				return True
+			__switch_desktop(dy)
+			return True
 
 	return False
 
 
-def on_scroll(dy):
+def on_scroll(x=None, y=None, dy=0):
+	if not get_feature_state(TASKBAR_SCROLL):
+		return False
+
+	if x is None or y is None:
+		x, y = win32api.GetCursorPos()
+
 	if __handle_overview_scroll(dy):
 		return True
-
-	elif __handle_taskbar_scroll(dy):
+	elif __handle_taskbar_scroll(x, y, dy):
 		return True
+
+	return False
 
 
 def check_desktop_changed():
 	global __last_switch_time, __current_desktop_number
+
+	if not get_feature_state(KEEP_WINDOWS):
+		return
 
 	current_time = time.time()
 
 	if __last_switch_time and current_time < __last_switch_time + 0.3:
 		return
 
-	if __current_desktop_number == VirtualDesktopAccessor.GetCurrentDesktopNumber():
+	curr = VirtualDesktopAccessor.GetCurrentDesktopNumber()
+	if __current_desktop_number == curr:
 		return
 
-	__current_desktop_number = VirtualDesktopAccessor.GetCurrentDesktopNumber()
-
+	__current_desktop_number = curr
 	move_windows_to_next_desktop(__current_desktop_number)
+
