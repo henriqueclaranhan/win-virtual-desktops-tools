@@ -3,32 +3,28 @@ import time
 from pynput.mouse import Listener
 from modules import scroll_desktops, hot_corner
 from components import tray
-from miscellaneous import utils
 
 
 def on_move(x, y):
 	try:
-		if not utils.is_app_fullscreen():
-			hot_corner.on_move()
-
+		hot_corner.on_move(x, y)
 	except Exception as err:
 		print(f"Unexpected {err=}, {type(err)=}")
-		raise
 
 
 def on_scroll(x, y, dx, dy):
 	try:
-		if not utils.is_app_fullscreen():
-			scroll_desktops.on_scroll(dy)
-
+		scroll_desktops.on_scroll(x, y, dy)
 	except Exception as err:
 		print(f"Unexpected {err=}, {type(err)=}")
-		raise
 
 
 def check_virtual_desktop_switch():
 	while True:
-		scroll_desktops.check_desktop_changed()
+		try:
+			scroll_desktops.check_desktop_changed()
+		except Exception as err:
+			print(f"Error checking desktop switch: {err}")
 		time.sleep(0.2)
 
 
@@ -39,3 +35,4 @@ desktop_monitor_thread = threading.Thread(target=check_virtual_desktop_switch, d
 desktop_monitor_thread.start()
 
 tray.setup_tray(listener)
+
