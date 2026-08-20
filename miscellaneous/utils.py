@@ -2,10 +2,13 @@ import win32api
 import win32con
 import win32gui
 
-__ingore_fullscreen_classes = [
+__ignore_fullscreen_classes = {
 	"WorkerW",
 	"XamlExplorerHostIslandWindow",
-]
+	"Shell_TrayWnd",
+	"Shell_SecondaryTrayWnd",
+	"Progman",
+}
 
 key_codes_release = [
     win32con.VK_LSHIFT, win32con.VK_RSHIFT, win32con.VK_LCONTROL, win32con.VK_RCONTROL,
@@ -18,12 +21,13 @@ def keyup_all_keyboard_keys():
 		win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
 
 
-def is_app_fullscreen():
-	x, y = win32api.GetCursorPos()
+def is_app_fullscreen(x=None, y=None):
+	if x is None or y is None:
+		x, y = win32api.GetCursorPos()
 
 	window_hwnd = win32gui.WindowFromPoint((x, y))
 
-	if window_hwnd == 0 or win32gui.GetClassName(window_hwnd) in __ingore_fullscreen_classes:
+	if window_hwnd == 0 or win32gui.GetClassName(window_hwnd) in __ignore_fullscreen_classes:
 		return False
 
 	monitor = win32api.MonitorFromWindow(window_hwnd, win32con.MONITOR_DEFAULTTONULL)
@@ -36,3 +40,4 @@ def is_app_fullscreen():
 		return window_rect == monitor_rect
 
 	return False
+
