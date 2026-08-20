@@ -1,31 +1,44 @@
 import win32api
 import win32con
 import time
-from components.settings import get_feature_state, HOT_CORNER
+from components.settings import (
+	get_feature_state,
+	get_monitor_corners,
+	HOT_CORNER,
+)
 from miscellaneous.utils import keyup_all_keyboard_keys, is_app_fullscreen
 
 __state = False
 __last_state_time = 0
-__monitors_cache = []
-__last_monitors_update = 0
+__active_corners_cache = []
+__last_cache_update = 0
 
 
-def __get_monitors_corners():
-	global __monitors_cache, __last_monitors_update
+def refresh_active_corners():
+	global __active_corners_cache, __last_cache_update
 
-	current_time = time.time()
-	if not __monitors_cache or (current_time - __last_monitors_update) > 5.0:
-		try:
-			__monitors_cache = [
-				(rect[0], rect[1])
-				for _, _, rect in win32api.EnumDisplayMonitors()
-			]
-			__last_monitors_update = current_time
-		except Exception:
-			if not __monitors_cache:
-				__monitors_cache = [(0, 0)]
+	try:
+		monitors = win32api.EnumDisplayMonitors()
+	except Exception:
+		monitors = [(None, None, (0, 0, 1920, 1080))]
 
-	return __monitors_cache
+	new_active_corners = []
+
+	for idx, (h_mon, hdc, rect) in enumerate(monitors):
+		left, top, right, bottom = rect
+		corners_config = get_monitor_corners(idx)
+
+		if corners_config.get("top_left", False):
+			new_active_corners.append((left, top, left + 6, top + 6))
+		if corners_config.get("top_right", False):
+			new_active_corners.append((right - 6, top, right, top + 6))
+		if corners_config.get("bottom_left", False):
+			new_active_corners.append((left, bottom - 6, left + 6, bottom))
+		if corners_config.get("bottom_right", False):
+			new_active_corners.append((right - 6, bottom - 6, right, bottom))
+
+	__active_corners_cache = new_active_corners
+	__last_cache_update = time.time()
 
 
 def __toggle_overview():
@@ -59,8 +72,11 @@ def on_move(x=None, y=None):
 	if x is None or y is None:
 		x, y = win32api.GetCursorPos()
 
-	corners = __get_monitors_corners()
-	in_corner = any(left <= x <= left + 6 and top <= y <= top + 6 for left, top in corners)
+	current_time = time.time()
+	if not __active_corners_cache or (current_time - __last_cache_update) > 5.0:
+		refresh_active_corners()
+
+	in_corner = any(x1 <= x <= x2 and y1 <= y <= y2 for x1, y1, x2, y2 in __active_corners_cache)
 
 	if in_corner:
 		if not __state:
@@ -71,4 +87,3 @@ def on_move(x=None, y=None):
 		__state = False
 
 	return True
-
